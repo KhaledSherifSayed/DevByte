@@ -23,7 +23,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.annotation.LayoutRes
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -31,10 +30,10 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.android.devbyteviewer.R
-import com.example.android.devbyteviewer.databinding.DevbyteItemBinding
 import com.example.android.devbyteviewer.databinding.FragmentDevByteBinding
 import com.example.android.devbyteviewer.domain.Video
 import com.example.android.devbyteviewer.viewmodels.DevByteViewModel
+import com.example.android.devbyteviewer.viewmodels.DevByteViewModelFactory
 
 /**
  * Show a list of DevBytes on screen.
@@ -46,11 +45,12 @@ class DevByteFragment : Fragment() {
      * lazy. This requires that viewModel not be referenced before onActivityCreated, which we
      * do in this Fragment.
      */
+
     private val viewModel: DevByteViewModel by lazy {
         val activity = requireNotNull(this.activity) {
             "You can only access the viewModel after onActivityCreated()"
         }
-        ViewModelProviders.of(this, DevByteViewModel.Factory(activity.application))
+        ViewModelProviders.of(this, DevByteViewModelFactory(activity.application))
                 .get(DevByteViewModel::class.java)
     }
 
@@ -135,75 +135,4 @@ class DevByteFragment : Fragment() {
             val httpUri = Uri.parse(url)
             return Uri.parse("vnd.youtube:" + httpUri.getQueryParameter("v"))
         }
-}
-
-/**
- * Click listener for Videos. By giving the block a name it helps a reader understand what it does.
- *
- */
-class VideoClick(val block: (Video) -> Unit) {
-    /**
-     * Called when a video is clicked
-     *
-     * @param video the video that was clicked
-     */
-    fun onClick(video: Video) = block(video)
-}
-
-/**
- * RecyclerView Adapter for setting up data binding on the items in the list.
- */
-class DevByteAdapter(val callback: VideoClick) : RecyclerView.Adapter<DevByteViewHolder>() {
-
-    /**
-     * The videos that our Adapter will show
-     */
-    var videos: List<Video> = emptyList()
-        set(value) {
-            field = value
-            // For an extra challenge, update this to use the paging library.
-
-            // Notify any registered observers that the data set has changed. This will cause every
-            // element in our RecyclerView to be invalidated.
-            notifyDataSetChanged()
-        }
-
-    /**
-     * Called when RecyclerView needs a new {@link ViewHolder} of the given type to represent
-     * an item.
-     */
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DevByteViewHolder {
-        val withDataBinding: DevbyteItemBinding = DataBindingUtil.inflate(
-                LayoutInflater.from(parent.context),
-                DevByteViewHolder.LAYOUT,
-                parent,
-                false)
-        return DevByteViewHolder(withDataBinding)
-    }
-
-    override fun getItemCount() = videos.size
-
-    /**
-     * Called by RecyclerView to display the data at the specified position. This method should
-     * update the contents of the {@link ViewHolder#itemView} to reflect the item at the given
-     * position.
-     */
-    override fun onBindViewHolder(holder: DevByteViewHolder, position: Int) {
-        holder.viewDataBinding.also {
-            it.video = videos[position]
-            it.videoCallback = callback
-        }
-    }
-
-}
-
-/**
- * ViewHolder for DevByte items. All work is done by data binding.
- */
-class DevByteViewHolder(val viewDataBinding: DevbyteItemBinding) :
-        RecyclerView.ViewHolder(viewDataBinding.root) {
-    companion object {
-        @LayoutRes
-        val LAYOUT = R.layout.devbyte_item
-    }
 }
