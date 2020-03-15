@@ -71,6 +71,4 @@ class DevByteViewModel(application: Application) : AndroidViewModel(application)
         super.onCleared()
         viewModelJob.cancel()
     }
-
-
 }
